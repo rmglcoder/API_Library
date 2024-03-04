@@ -32,7 +32,7 @@ const createUser = async (req, res) => {
                 _id: library_user._id,
                 name: library_user.name,
                 email: library_user.email,
-                password: library_user.password,
+                //password: library_user.password,
                 isAdmin: library_user.isAdmin,
             })
         }
@@ -142,7 +142,7 @@ const getAllUserProfiles = async (req, res) => {
 
     if (user.isAdmin) {
         // Admin is logged in, proceed with fetching user profiles
-        const allUsers = await User.find({}).select('-createdAt -updatedAt -__v').sort({ createdAt: -1});
+        const allUsers = await User.find({}).select('-createdAt -updatedAt -__v password').sort({ createdAt: -1});
         return res.status(200).json(allUsers);
     } else {
         // Admin not logged in, return unauthorized
@@ -159,7 +159,7 @@ const getUserProfile = async (req, res) => {
         }
 
         // Find the specific user profile by its ID
-        const userProfile = await User.findById(id).select('-createdAt -updatedAt -__v');
+        const userProfile = await User.findById(id).select('-createdAt -updatedAt -__v password');
 
         if (!userProfile) {
             return res.status(404).json({ error: "User profile not found" });

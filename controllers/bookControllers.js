@@ -202,57 +202,6 @@ const deleteBook = async (req, res) => {
     }
 };
 
-// Function to borrow a book
-const borrowBook = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const user = req.user;
-
-        // Check if the logged-in user is not an admin
-        if (!user.isAdmin) {
-            // Check if the provided ID is a valid mongoose ID
-            if (!mongoose.Types.ObjectId.isValid( id )) {
-                return res.status(400).json({ error: "Invalid book ID" });
-            }
-
-            // Find the book
-            const book = await Book.findById(id);
-
-            // If the book is not found, return an error response
-            if (!book) {
-                return res.status(404).json({ error: "Book not found" });
-            }
-
-            // Check if there are available stocks to borrow
-            if (book.stocks > 0) {
-                // Reduce the stocks by 1
-                book.stocks -= 1;
-
-                // Save the updated book
-                await book.save();
-
-                // Return a success message with the remaining stocks
-                return res.status(200).json({
-                    message: "Book borrowed successfully",
-                    remainingStocks: book.stocks
-                });
-            } else {
-                // Return an error response if there are no available stocks
-                return res.status(400).json({ error: "No available stocks for borrowing" });
-            }
-        } else {
-            // Return an unauthorized response if the user is an admin
-            return res.status(401).json({ message: "Unauthorized" });
-        }
-    } catch (error) {
-        // Handle any errors and send an error response
-        res.status(500).json({
-            error: error.message,
-            stack: error.stack
-        });
-    }
-};
-
 // Exporting the functions to be used in other files
 module.exports = {
     createBook, 
@@ -260,6 +209,5 @@ module.exports = {
     getBooks,
     getSpecificBook,
     updateBook,
-    borrowBook,
     searchBooks
 };

@@ -147,8 +147,6 @@ const returnBook = async (req, res) => {
     }
 };
 
-
-
 const getAllBorrowedBooks = async (req, res) => {
     try {
         // Get the logged-in user
@@ -217,10 +215,43 @@ const getBorrowedBooksByUser = async (req, res) => {
     }
 };
 
+const getBorrowedBooksForUser = async (req, res) => {
+    try {
+        // Get the logged-in user
+        const user = req.user;
+
+        // Check if the user is not an admin
+        if (!user.isAdmin) {
+            // Find all borrowed books for the user
+            const borrowedBooks = await BorrowedBook.find({ user: user._id })
+                .populate('book')  // Populate the 'book' field with book details
+                .select('-createdAt -updatedAt -__v');  // Exclude certain fields
+
+            // Check if there are no borrowed books
+            if (!borrowedBooks || borrowedBooks.length === 0) {
+                return res.status(200).json({ message: 'No borrowed books for the user as of the moment' });
+            }
+
+            // Return the list of borrowed books
+            return res.status(200).json(borrowedBooks);
+        } else {
+            // Return an unauthorized response if the user is an admin
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+    } catch (error) {
+        // Handle any errors and send an error response
+        res.status(500).json({
+            error: error.message,
+            stack: error.stack
+        });
+    }
+};
+
 
 module.exports = {
     borrowBook,
     returnBook,
     getAllBorrowedBooks,
     getBorrowedBooksByUser,
+    getBorrowedBooksForUser
 };
