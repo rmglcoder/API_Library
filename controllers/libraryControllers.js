@@ -142,13 +142,14 @@ const getAllUserProfiles = async (req, res) => {
 
     if (user.isAdmin) {
         // Admin is logged in, proceed with fetching user profiles
-        const allUsers = await User.find({}).select('-createdAt -updatedAt -__v password').sort({ createdAt: -1});
+        const allUsers = await User.find({}).select('-createdAt -updatedAt -__v -password');
         return res.status(200).json(allUsers);
     } else {
         // Admin not logged in, return unauthorized
         return res.status(401).json({ message: "Unauthorized" });
     }
 }
+
 const getUserProfile = async (req, res) => {
     try {
         const { id } = req.params;
@@ -159,7 +160,7 @@ const getUserProfile = async (req, res) => {
         }
 
         // Find the specific user profile by its ID
-        const userProfile = await User.findById(id).select('-createdAt -updatedAt -__v password');
+        const userProfile = await User.findById(id).select('-createdAt -updatedAt -__v -password');
 
         if (!userProfile) {
             return res.status(404).json({ error: "User profile not found" });
