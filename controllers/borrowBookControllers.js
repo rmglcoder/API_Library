@@ -3,6 +3,7 @@ const User = require('../models/libraryModel');
 const BorrowedBook = require('../models/borrowBookModel');
 const mongoose = require('mongoose');
 
+
 // BORROW
 const borrowBook = async (req, res) => {
     try {
@@ -217,27 +218,25 @@ const getBorrowedBooksByUser = async (req, res) => {
 
 const getBorrowedBooksForUser = async (req, res) => {
     try {
-        // Get the logged-in user
-        const user = req.user;
+        // Get the logged-in user from the authentication token
+        const loggedInUserId = req.user._id;
+        const isAdmin = req.user.isAdmin;
 
-        // Check if the user is not an admin
-        if (!user.isAdmin) {
-            // Find all borrowed books for the user
-            const borrowedBooks = await BorrowedBook.find({ user: user._id })
-                .populate('book')  // Populate the 'book' field with book details
-                .select('-createdAt -updatedAt -__v');  // Exclude certain fields
+        // Define the query based on user role
+        const query = isAdmin ? {} : { user: loggedInUserId };
 
-            // Check if there are no borrowed books
-            if (!borrowedBooks || borrowedBooks.length === 0) {
-                return res.status(200).json({ message: 'No borrowed books for the user as of the moment' });
-            }
+        // Find borrowed books based on the query
+        const borrowedBooks = await BorrowedBook.find(query)
+            .populate('book')  // Populate the 'book' field with book details
+            .select('-createdAt -updatedAt -__v');  // Exclude certain fields
 
-            // Return the list of borrowed books
-            return res.status(200).json(borrowedBooks);
-        } else {
-            // Return an unauthorized response if the user is an admin
-            return res.status(401).json({ message: "Unauthorized" });
+        // Check if there are no borrowed books
+        if (!borrowedBooks || borrowedBooks.length === 0) {
+            return res.status(200).json({ message: 'No borrowed books for the user as of the moment' });
         }
+
+        // Return the list of borrowed books
+        return res.status(200).json(borrowedBooks);
     } catch (error) {
         // Handle any errors and send an error response
         res.status(500).json({

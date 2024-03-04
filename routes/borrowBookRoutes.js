@@ -7,6 +7,6 @@ router.post('/',verify, borrowBook);
 router.post('/return', verify, returnBook);
 router.get('/get-borrowed-books', verify, getAllBorrowedBooks);
 router.get('/get-borrowed-books-by-user/:userId', verify, getBorrowedBooksByUser);
-router.get('/get-borrowed-books-by-user/all', verify, getBorrowedBooksForUser);
+router.get('/get-borrowed-books-for-user/all',  verify, getBorrowedBooksForUser);
 
 module.exports = router;
