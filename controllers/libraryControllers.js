@@ -142,7 +142,7 @@ const getAllUserProfiles = async (req, res) => {
 
     if (user.isAdmin) {
         // Admin is logged in, proceed with fetching user profiles
-        const allUsers = await User.find({}, 'password -createdAt -updatedAt -__v');
+        const allUsers = await User.find({}).select('-createdAt -updatedAt -__v').sort({ createdAt: -1});
         return res.status(200).json(allUsers);
     } else {
         // Admin not logged in, return unauthorized
@@ -159,7 +159,7 @@ const getUserProfile = async (req, res) => {
         }
 
         // Find the specific user profile by its ID
-        const userProfile = await User.findById(id).select('-createdAt -updatedAt -__v password ');
+        const userProfile = await User.findById(id).select('-createdAt -updatedAt -__v');
 
         if (!userProfile) {
             return res.status(404).json({ error: "User profile not found" });
@@ -178,12 +178,12 @@ const getUserProfile = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const user = req.user;
-        const { id } = req.params;
 
-        // Check if the logged-in user is an admin or the owner of the profile
-        if (user.isAdmin || user._id.toString() === id) {
+        if (user.isAdmin) {
+            const { id } = req.params;
+
             if (!mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({ error: "Invalid user ID" });
+                return res.status(400).json({ error: "No such user" });
             }
 
             const updatedUser = await User.findOneAndUpdate(
@@ -191,12 +191,12 @@ const updateUser = async (req, res) => {
             );
 
             if (!updatedUser) {
-                return res.status(404).json({ error: "User not found" });
+                return res.status(400).json({ error: "No such user" });
             }
 
             return res.status(200).json(updatedUser);
         } else {
-            // User is not an admin and not the owner of the profile
+            // Admin not logged in, return unauthorized
             return res.status(401).json({ message: "Unauthorized" });
         }
 
@@ -206,7 +206,7 @@ const updateUser = async (req, res) => {
             stack: error.stack
         });
     }
-};
+}
 
 module.exports = {  createUser, 
                     loginUser, 
