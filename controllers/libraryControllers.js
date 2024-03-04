@@ -174,29 +174,29 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-
 const updateUser = async (req, res) => {
     try {
         const user = req.user;
+        const { id } = req.params;
 
-        if (user.isAdmin) {
-            const { id } = req.params;
+        // Check if the provided ID is a valid mongoose ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid user ID" });
+        }
 
-            if (!mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({ error: "No such user" });
-            }
-
-            const updatedUser = await User.findOneAndUpdate(
-                { _id: id }, { ...req.body }, { new: true }
-            ).select({ createdAt: 0, updatedAt: 0, __v: 0, password: 0 });
+        // Ensure the logged-in user can only update their own profile
+        if (user.isAdmin || user._id.toString() === id) {
+            const updatedUser = await User.findByIdAndUpdate(
+                id, { ...req.body }, { new: true, select: '-createdAt -updatedAt -__v -password' }
+            );
 
             if (!updatedUser) {
-                return res.status(400).json({ error: "No such user" });
+                return res.status(404).json({ error: "User not found" });
             }
 
             return res.status(200).json(updatedUser);
         } else {
-            // Admin not logged in, return unauthorized
+            // User not authorized to update another user's profile
             return res.status(401).json({ message: "Unauthorized" });
         }
 
@@ -206,7 +206,7 @@ const updateUser = async (req, res) => {
             stack: error.stack
         });
     }
-}
+};
 
 module.exports = {  createUser, 
                     loginUser, 
