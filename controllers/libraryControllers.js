@@ -188,7 +188,7 @@ const updateUser = async (req, res) => {
 
             const updatedUser = await User.findOneAndUpdate(
                 { _id: id }, { ...req.body }, { new: true }
-            );
+            ).select({ createdAt: 0, updatedAt: 0, __v: 0, password: 0 });
 
             if (!updatedUser) {
                 return res.status(400).json({ error: "No such user" });
