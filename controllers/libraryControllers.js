@@ -142,7 +142,7 @@ const getAllUserProfiles = async (req, res) => {
 
     if (user.isAdmin) {
         // Admin is logged in, proceed with fetching user profiles
-        const allUsers = await User.find({}).select('password -createdAt -updatedAt -__v').sort({ createdAt: -1});
+        const allUsers = await User.find({}, 'password -createdAt -updatedAt -__v');
         return res.status(200).json(allUsers);
     } else {
         // Admin not logged in, return unauthorized
