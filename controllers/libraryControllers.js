@@ -188,7 +188,7 @@ const updateUser = async (req, res) => {
 
             const updatedUser = await User.findOneAndUpdate(
                 { _id: id }, { ...req.body }, { new: true }
-            ).select('-createdAt -updatedAt -__v password').sort({ createdAt: -1 });;
+            ).select('-createdAt -updatedAt -__v password');
 
             if (!updatedUser) {
                 return res.status(404).json({ error: "User not found" });
